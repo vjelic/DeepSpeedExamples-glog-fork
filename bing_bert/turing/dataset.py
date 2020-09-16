@@ -29,6 +29,7 @@ class BatchType(IntEnum):
 class PretrainDataType(IntEnum):
     NUMPY = 0
     VALIDATION = 1
+    WIKIPEDIA = 2
 
 
 MaskedLMInstance = collections.namedtuple("MaskedLMInstance",
@@ -279,6 +280,8 @@ class PreTrainingDataset(Dataset):
             self.data = WikiPretrainingDataCreator.load(path)
         elif data_type == PretrainDataType.NUMPY:
             self.data = NumpyPretrainingDataCreator.load(path)
+        elif data_type == PretrainDataType.WIKIPEDIA:
+            self.data = WikiNBookCorpusPretrainingDataCreator(path, tokenizer, max_seq_length)
         self.len = len(self.data)
         logger.info(
             f"Data Loading Completed for Pretraining Data from {path} with {self.len} samples took {time.time()-start:.2f}s."

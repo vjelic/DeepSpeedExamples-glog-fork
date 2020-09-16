@@ -331,8 +331,8 @@ class WikiNBookCorpusPretrainingDataCreator(PretrainingDataCreator):
                 documents.append(document)
 
         documents = [x for x in documents if x]
-        print(documents[0])
-        print(len(documents))
+        #print(documents[0])
+        #print(len(documents))
         self.documents = documents
         for _ in range(self.dupe_factor):
             for index in range(len(self.documents)):
