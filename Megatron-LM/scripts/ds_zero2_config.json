@@ -1,5 +1,5 @@
 {
-  "train_batch_size": 16,
+  "train_batch_size": 8,
   "gradient_accumulation_steps": 1,
   "steps_per_print": 1,
   "zero_optimization": {
@@ -16,7 +16,8 @@
   },
   "activation_checkpointing": {
     "partition_activations": true,
-    "contiguous_memory_optimization": false
+    "contiguous_memory_optimization": false,
+    "synchronize_checkpoint_boundary": true
   },
   "wall_clock_breakdown": false
 }
