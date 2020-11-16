@@ -11,7 +11,6 @@ script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
 
 config_json="$script_dir/ds_zero2_config.json"
-config_json="$script_dir/ds_zero2_config_none.json"
 
 gpt_options=" \
        --model-parallel-size ${MP_SIZE} \
