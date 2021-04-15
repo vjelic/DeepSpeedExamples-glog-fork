@@ -110,26 +110,18 @@ def get_optimizer(model, args):
             if not hasattr(param, 'model_parallel'):
                 param.model_parallel = False
 
-    if args.cpu_optimizer:
-        if args.cpu_torch_adam:
-            cpu_adam_optimizer = torch.optim.Adam
-        else:
-            from deepspeed.ops.adam import DeepSpeedCPUAdam
-            cpu_adam_optimizer = DeepSpeedCPUAdam
-        optimizer = cpu_adam_optimizer(param_groups,
-                        lr=args.lr, weight_decay=args.weight_decay)
-    else:
-        # Use FusedAdam.
-        optimizer = Adam(param_groups,
+    # Use FusedAdam.
+    optimizer = Adam(param_groups,
                          lr=args.lr, weight_decay=args.weight_decay)
 
     print(f'Optimizer = {optimizer.__class__.__name__}')
+
     if args.deepspeed:
-        # fp16 wrapper is not required for DeepSpeed.
-        return optimizer
+        return optimizer, param_groups
 
     # Wrap into fp16 optimizer.
     if args.fp16:
+        
         optimizer = FP16_Optimizer(optimizer,
                                    static_loss_scale=args.loss_scale,
                                    dynamic_loss_scale=args.dynamic_loss_scale,
@@ -138,7 +130,7 @@ def get_optimizer(model, args):
                                        'min_scale': args.min_scale,
                                        'delayed_shift': args.hysteresis})
 
-    return optimizer
+    return optimizer, param_groups
 
 
 def get_learning_rate_scheduler(optimizer, args):
@@ -166,7 +158,7 @@ def setup_model_and_optimizer(args):
     """Setup model and optimizer."""
 
     model = get_model(args)
-    optimizer = get_optimizer(model, args)
+    optimizer, param_groups = get_optimizer(model, args)
     lr_scheduler = get_learning_rate_scheduler(optimizer, args)
 
     if args.deepspeed:
@@ -174,7 +166,7 @@ def setup_model_and_optimizer(args):
 
         model, optimizer, _, lr_scheduler = deepspeed.initialize(
             model=model,
-            optimizer=optimizer,
+            model_parameters=param_groups,
             args=args,
             lr_scheduler=lr_scheduler,
             mpu=mpu,
@@ -557,20 +549,24 @@ def set_deepspeed_activation_checkpointing(args):
 def initialize_distributed(args):
     """Initialize torch.distributed."""
 
-    # Manually set the device ids.
-    device = args.rank % torch.cuda.device_count()
+    if args.deepspeed:
+        deepspeed.init_distributed(dist_backend=args.distributed_backend)
+    else:
+        # Manually set the device ids.
+        device = args.rank % torch.cuda.device_count()
+        # Call the init process
+        init_method = 'tcp://'
+        master_ip = os.getenv('MASTER_ADDR', 'localhost')
+        master_port = os.getenv('MASTER_PORT', '6000')
+        init_method += master_ip + ':' + master_port
+        torch.distributed.init_process_group(
+            backend=args.distributed_backend,
+            world_size=args.world_size, rank=args.rank,
+            init_method=init_method)
+
     if args.local_rank is not None:
         device = args.local_rank
     torch.cuda.set_device(device)
-    # Call the init process
-    init_method = 'tcp://'
-    master_ip = os.getenv('MASTER_ADDR', 'localhost')
-    master_port = os.getenv('MASTER_PORT', '6000')
-    init_method += master_ip + ':' + master_port
-    torch.distributed.init_process_group(
-        backend=args.distributed_backend,
-        world_size=args.world_size, rank=args.rank,
-        init_method=init_method)
 
     # Set the model-parallel / data-parallel communicators.
     mpu.initialize_model_parallel(args.model_parallel_size)
