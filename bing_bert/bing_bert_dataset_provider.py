@@ -21,9 +21,10 @@ class BingBertDatasetProvider(BertDatasetProviderInterface):
         # Initialize dataset paths
         self.dataset_paths = []
         for dataset in ['wiki_pretrain_dataset', 'bc_pretrain_dataset']:
-            self.dataset_paths.append(
-                os.path.join(args.data_path_prefix,
-                             args.config["data"]["datasets"][dataset]))
+            if (args.config["data"]["datasets"][dataset]):
+                self.dataset_paths.append(
+                    os.path.join(args.data_path_prefix,
+                                 args.config["data"]["datasets"][dataset]))
 
         self.max_seq_length = args.max_seq_length
         self.max_predictions_per_seq = args.max_predictions_per_seq
