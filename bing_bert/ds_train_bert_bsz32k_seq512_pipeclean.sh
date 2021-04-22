@@ -19,12 +19,9 @@ deepspeed ${base_dir}/deepspeed_train.py \
 --deepspeed_transformer_kernel \
 --job_name $JOB_NAME \
 --deepspeed_config ${base_dir}/deepspeed_bsz32k_lamb_config_seq512_pipeclean.json \
---validation_data_path_prefix /data/bert \
 --data_path_prefix /data/bert \
 --rewarmup \
 --lr_schedule "EE" \
 --attention_dropout_checkpoint \
 --lr_offset 0.0 \
---load_training_checkpoint ${CHECKPOINT_BASE_PATH} \
---load_checkpoint_id ${CHECKPOINT_EPOCH150_NAME} \
 &> ${JOB_NAME}.log
