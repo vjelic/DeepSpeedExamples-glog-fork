@@ -25,7 +25,7 @@ gpt_options=" \
        --tokenizer-type GPT2BPETokenizer \
        --split 949,50,1 \
        --distributed-backend nccl \
-       --lr 0.00015 \
+       --lr 0.000015 \
        --no-load-optim \
        --lr-decay-style cosine \
        --weight-decay 1e-2 \
