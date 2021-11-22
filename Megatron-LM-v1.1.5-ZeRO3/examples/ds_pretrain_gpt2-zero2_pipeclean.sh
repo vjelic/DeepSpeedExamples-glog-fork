@@ -26,10 +26,14 @@ else
 fi
 
 
-BASE_DATA_PATH=/data/Megatron-LM/data
-DATA_PATH=${BASE_DATA_PATH}/indexed_datasets/megatron
-VOCAB_PATH=${BASE_DATA_PATH}/gpt2-vocab.json
-MERGE_PATH=${BASE_DATA_PATH}/gpt2-merges.txt
+#BASE_DATA_PATH=/data/Megatron-LM/data
+#DATA_PATH=${BASE_DATA_PATH}/indexed_datasets/megatron
+#VOCAB_PATH=${BASE_DATA_PATH}/gpt2-vocab.json
+#MERGE_PATH=${BASE_DATA_PATH}/gpt2-merges.txt
+DATA_PATH=/data/DeepSpeed_data/Megatron_wikipedia/my-gpt2_text_document
+VOCAB_PATH=/data/DeepSpeed_data/Megatron_wikipedia/gpt2-vocab.json
+MERGE_PATH=/data/DeepSpeed_data/Megatron_wikipedia/gpt2-merges.txt
+CHECKPOINT_PATH=checkpoints/gpt2_345m_ds
 
 script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
@@ -65,6 +69,7 @@ TILE_DIM=1
 # Megatron Model Parallelism
 LOGDIR="tboard-zero2/stage${stage}-lazyscatter-${NUM_LAYERS}l_${HIDDEN_SIZE}h_${NUM_WORKERS}n_${NUM_GPUS_PER_WORKER}g_${MP_SIZE}mp_${BATCHSIZE}b"
 
+#--load $CHECKPOINT_PATH \
 gpt_options=" \
         --model-parallel-size ${MP_SIZE} \
         --num-layers $NUM_LAYERS \
@@ -76,7 +81,6 @@ gpt_options=" \
         --train-iters 320000 \
         --lr-decay-iters 320000 \
         --save $CHECKPOINT_PATH \
-	--load $CHECKPOINT_PATH \
         --data-path $DATA_PATH \
         --vocab-file $VOCAB_PATH \
         --merge-file $MERGE_PATH \
