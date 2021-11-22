@@ -30,6 +30,7 @@ BASE_DATA_PATH=/data/Megatron-LM/data
 DATA_PATH=${BASE_DATA_PATH}/indexed_datasets/megatron
 VOCAB_PATH=${BASE_DATA_PATH}/gpt2-vocab.json
 MERGE_PATH=${BASE_DATA_PATH}/gpt2-merges.txt
+CHECKPOINT_PATH=checkpoints/gpt2_345m_ds
 
 script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
@@ -65,6 +66,7 @@ TILE_DIM=1
 # Megatron Model Parallelism
 LOGDIR="tboard-zero2/stage${stage}-lazyscatter-${NUM_LAYERS}l_${HIDDEN_SIZE}h_${NUM_WORKERS}n_${NUM_GPUS_PER_WORKER}g_${MP_SIZE}mp_${BATCHSIZE}b"
 
+
 gpt_options=" \
         --model-parallel-size ${MP_SIZE} \
         --num-layers $NUM_LAYERS \
@@ -76,7 +78,7 @@ gpt_options=" \
         --train-iters 320000 \
         --lr-decay-iters 320000 \
         --save $CHECKPOINT_PATH \
-	--load $CHECKPOINT_PATH \
+        --load $CHECKPOINT_PATH \
         --data-path $DATA_PATH \
         --vocab-file $VOCAB_PATH \
         --merge-file $MERGE_PATH \
@@ -140,3 +142,23 @@ if [ "${CC}" = "true" ]; then
 chkp_opt="${chkp_opt} \
         --contigious-checkpointing"
 fi
+
+if [ "${PROFILE}" = "true" ]; then
+chkp_opt="${chkp_opt} \
+        --profile-backward"
+fi
+
+if [ "${TILED_LINEAR}" = "true" ]; then
+tile_opt="${tile_opt} \
+        --memory-centric-tiled-linear \
+        --tile-factor=${TILE_DIM}"
+fi
+
+
+full_options="${gpt_options} ${deepspeed_options} ${chkp_opt} ${tile_opt}"
+
+run_cmd="deepspeed --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER}  pretrain_gpt2.py ${@:2} ${full_options}"
+echo ${run_cmd}
+eval ${run_cmd}
+
+set +x

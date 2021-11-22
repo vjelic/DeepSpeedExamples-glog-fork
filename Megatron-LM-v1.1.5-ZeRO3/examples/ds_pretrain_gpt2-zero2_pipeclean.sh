@@ -144,3 +144,23 @@ if [ "${CC}" = "true" ]; then
 chkp_opt="${chkp_opt} \
         --contigious-checkpointing"
 fi
+
+if [ "${PROFILE}" = "true" ]; then
+chkp_opt="${chkp_opt} \
+        --profile-backward"
+fi
+
+if [ "${TILED_LINEAR}" = "true" ]; then
+tile_opt="${tile_opt} \
+        --memory-centric-tiled-linear \
+        --tile-factor=${TILE_DIM}"
+fi
+
+
+full_options="${gpt_options} ${deepspeed_options} ${chkp_opt} ${tile_opt}"
+
+run_cmd="deepspeed --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER}  pretrain_gpt2.py ${@:2} ${full_options}"
+echo ${run_cmd}
+eval ${run_cmd}
+
+set +x
