@@ -5,13 +5,13 @@ MP_SIZE=1
 
 DEBUG=1
 if [[ ${DEBUG} == 1 ]];  then
-       MP_SIZE=1
+       MP_SIZE=8
        NUM_WORKERS=1
        NUM_GPUS_PER_WORKER=8
        HIDDEN_SIZE=3072
        NUM_ATTN_HEADS=24
        NUM_LAYERS=72
-       BATCHSIZE=4
+       BATCHSIZE=8
 else
        NUM_WORKERS=${DLTS_NUM_WORKER}
        NUM_GPUS_PER_WORKER=${DLTS_NUM_GPU_PER_WORKER}

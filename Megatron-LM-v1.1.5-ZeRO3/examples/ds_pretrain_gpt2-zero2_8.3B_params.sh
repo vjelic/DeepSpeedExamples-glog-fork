@@ -38,7 +38,7 @@ CHECKPOINT_PATH=checkpoints/gpt2_345m_ds
 script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
 if [[ -z $1 ]]; then
-       config_json="$script_dir/ds_zero_stage_2_config.json"
+       config_json="$script_dir/ds_zero_stage_2_config_8.3B_params.json"
 
        # offloads to NVMe
        #config_json="$script_dir/ds_zero_stage_infinity_config.json"
