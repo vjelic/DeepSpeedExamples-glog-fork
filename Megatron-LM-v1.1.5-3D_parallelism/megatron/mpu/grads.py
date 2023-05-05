@@ -19,7 +19,10 @@
 
 
 import torch
-from torch._six import inf
+try:
+    from torch._six import inf as inf
+except ModuleNotFoundError:
+    from torch import inf as inf
 
 try:
     from apex.multi_tensor_apply import multi_tensor_applier
