@@ -19,7 +19,10 @@
 
 
 import torch
-from torch._six import inf
+try:
+    from torch._six import inf as inf
+except ModuleNotFoundError:
+    from torch import inf as inf
 
 from .initialize import get_model_parallel_group
 from .initialize import get_model_parallel_rank
